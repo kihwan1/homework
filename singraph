@@ -1,0 +1,137 @@
+#include <iostream>
+#include <fstream>
+#include <cmath>
+
+using namespace std;
+
+int main() {
+
+    // Sprint 1
+
+
+    char header[12];
+
+
+    // 첫번째 구성요소인 샘플개수 설정
+    int* n;
+    n = (int*)header;
+    *n = 200; // 샘플개수:200 개
+
+    // 두번째 구성요소인 주파수 설정
+    float* f;
+    f = (float*)(header + 4);
+    *f = 1000; // 주파수:1000 Hz
+
+    // 세번째 구성요소인 진폭 설정
+    short* a;
+    a = (short*)(header + 8);
+    *a = 7500; // 진폭 : 7500
+
+    // 네번째 구성요소인 위상 설정
+    short* p;
+    p = (short*)(header + 10);
+    *p = 12;
+
+
+    ofstream xx("a.dat", ios::binary | ios::out);
+    if (!xx) {
+        cout << "Cannot open a file!!" << endl;
+        return 444;
+    }
+    xx.write(header, 12 * sizeof(char));
+    xx.close();
+
+
+
+
+
+
+    // Sprint 2 & 3
+
+    ifstream yy("a.dat", ios::binary | ios::in);
+    if (!yy) {
+        cout << "Cannot open a file!!" << endl;
+        return 444;
+    }
+    yy.read(header, 12 * sizeof(char));
+    yy.close();
+
+
+    // read "a.dat" and calculate
+
+    const float pi = 3.141592; // pi 값 지정
+    float dt = 1 / (*f * 20.0); //한주기당 20개 점찍기
+    short samples1[200]; // sample1 수 100~200개
+    short samples2[200]; // sample1 수 100~200개
+
+
+    for (int i = 0; i < *n; i++)
+        samples1[i] = (float)((*a) * sin((2.0 * pi * (*f) * i * dt) + ((*p) * pi) / 180));
+
+    ofstream zz("a.dat", ios::binary | ios::out);
+    if (!zz) {
+        cout << "Cannot write a file!!" << endl;
+        return 444;
+    }
+    zz.write((char*)samples1, (*n) * sizeof(short));
+    zz.close();
+
+
+
+    float dt2 = 1 / (*f * 20.0); // 같은 dt 값을 사용하기 위하여 a.dat의 dt 값 저장
+    *f = 700;
+
+
+    // "b.dat"(주파수 바꾼 파일) calculate & write
+
+    for (int i = 0; i < *n; i++)
+        samples2[i] = (float)((*a) * sin((2.0 * pi * (*f) * i * dt2) + ((*p) * pi) / 180));
+
+    ofstream kk("b.dat", ios::binary | ios::out);
+    if (!kk) {
+        cout << "Cannot write a file!!" << endl;
+        return 444;
+    }
+    kk.write((char*)samples2, (*n) * sizeof(short));
+    kk.close();
+
+
+
+
+
+
+    // Sprint 4
+
+    // memory allocation
+    short* data1;
+    data1 = new short[*n];
+    short* data2;
+    data2 = new short[*n];
+
+    // Read data
+    ifstream ii("a.dat", ios::binary | ios::in);
+    if (!ii) {
+        cout << "Cannot open a file!!" << endl;
+        return 444;
+    }
+    ii.read((char*)data1, n[0] * sizeof(short));
+    ii.close();
+
+    ifstream jj("b.dat", ios::binary | ios::in);
+    if (!jj) {
+        cout << "Cannot open a file!!" << endl;
+        return 444;
+    }
+    jj.read((char*)data2, n[0] * sizeof(short));
+    jj.close();
+
+
+    ofstream tt("c.txt");
+    if (!tt) {
+        cout << "Cannot write a file!!" << endl;
+        return 444;
+    }
+    for (int i = 0; i < n[0]; i++)
+        tt << i * dt << " " << data1[i] << " " << data2[i] << endl;
+    tt.close();
+}
